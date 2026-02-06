@@ -366,8 +366,7 @@ const IssuesPage = () => {
         className="panel card"
         style={{ color: "var(--muted)", fontSize: 13 }}
       >
-        Signed in as <strong>{user?.email}</strong>. Keep security in mind: JWT
-        is stored locally for the demo.
+        Signed in as <strong>{user?.email}</strong>.
       </div>
     </div>
   );
