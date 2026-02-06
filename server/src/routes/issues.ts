@@ -43,8 +43,8 @@ const buildFilters = (query: Record<string, unknown>) => {
   if (search && typeof search === "string" && search.trim().length > 0) {
     const labelTerms = search.split(/[, ]+/).filter(Boolean);
     const or: unknown[] = [
-      { title: { contains: search, mode: "insensitive" } },
-      { description: { contains: search, mode: "insensitive" } },
+      { title: { contains: search } },
+      { description: { contains: search } },
     ];
     if (labelTerms.length) {
       or.push({ labels: { array_contains: labelTerms } });

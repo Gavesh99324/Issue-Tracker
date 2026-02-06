@@ -121,11 +121,30 @@ button {
 .textarea,
 .select {
   width: 100%;
-  background: rgba(255, 255, 255, 0.03);
+  background: var(--panel);
   border: 1px solid var(--border);
   color: var(--text);
   border-radius: 10px;
   padding: 10px 12px;
+}
+
+.select {
+  appearance: none;
+  background: linear-gradient(145deg, var(--panel), var(--panel-strong));
+  transition:
+    border-color 0.15s ease,
+    box-shadow 0.15s ease;
+}
+
+.select:hover,
+.select:focus {
+  border-color: rgba(63, 184, 175, 0.6);
+  box-shadow: 0 0 0 3px rgba(63, 184, 175, 0.14);
+}
+
+select option {
+  background: var(--panel);
+  color: var(--text);
 }
 
 .label {
