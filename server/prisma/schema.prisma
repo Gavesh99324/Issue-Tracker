@@ -1,0 +1,57 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "mysql"
+  url      = env("DATABASE_URL")
+}
+
+enum IssueStatus {
+  OPEN
+  IN_PROGRESS
+  RESOLVED
+  CLOSED
+}
+
+enum Priority {
+  LOW
+  MEDIUM
+  HIGH
+  CRITICAL
+}
+
+enum Severity {
+  MINOR
+  MAJOR
+  CRITICAL
+}
+
+model User {
+  id           String   @id @default(uuid())
+  email        String   @unique
+  passwordHash String
+  name         String
+  createdAt    DateTime @default(now())
+  updatedAt    DateTime @updatedAt
+  issues       Issue[]
+}
+
+model Issue {
+  id          String      @id @default(uuid())
+  title       String
+  description String
+  status      IssueStatus @default(OPEN)
+  priority    Priority    @default(MEDIUM)
+  severity    Severity?
+  assignee    String?
+  labels      Json        @default("[]")
+  createdAt   DateTime    @default(now())
+  updatedAt   DateTime    @updatedAt
+  userId      String
+  createdBy   User        @relation(fields: [userId], references: [id])
+
+  @@index([status])
+  @@index([priority])
+  @@index([userId])
+}
