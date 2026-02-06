@@ -155,6 +155,12 @@ export const buildExportUrl = (
   params: Record<string, string | number | undefined>,
   format: "csv" | "json" = "csv",
 ) => {
-  const search = new URLSearchParams({ ...params, format }).toString();
+  const filtered: Record<string, string> = {};
+  Object.entries({ ...params, format }).forEach(([key, value]) => {
+    if (value !== undefined && value !== null && value !== "") {
+      filtered[key] = String(value);
+    }
+  });
+  const search = new URLSearchParams(filtered).toString();
   return `${import.meta.env.VITE_API_URL || "http://localhost:4000"}/issues/export?${search}`;
 };

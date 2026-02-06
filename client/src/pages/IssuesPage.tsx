@@ -55,6 +55,7 @@ const IssuesPage = () => {
   const [deleteIssue] = useDeleteIssueMutation();
 
   const user = useAppSelector((s) => s.auth.user);
+  const token = useAppSelector((s) => s.auth.token);
 
   useEffect(() => {
     setPage(1);
@@ -80,6 +81,53 @@ const IssuesPage = () => {
   const confirmDelete = async (id: string) => {
     if (!window.confirm("Delete this issue? This cannot be undone.")) return;
     await deleteIssue(id);
+  };
+
+  const handleExport = async (format: "csv" | "json") => {
+    if (!token) {
+      alert("Please log in to export.");
+      return;
+    }
+
+    const url = buildExportUrl(
+      {
+        page,
+        pageSize,
+        search: debouncedSearch || undefined,
+        status: status || undefined,
+        priority: priority || undefined,
+        severity: severity || undefined,
+        assignee: assignee || undefined,
+      },
+      format,
+    );
+
+    try {
+      const res = await fetch(url, {
+        headers: { Authorization: `Bearer ${token}` },
+      });
+      if (!res.ok) {
+        const message =
+          (await res.json().catch(() => ({}) as any)).message ||
+          "Export failed";
+        alert(message);
+        return;
+      }
+
+      const blob = await res.blob();
+      const downloadUrl = window.URL.createObjectURL(blob);
+      const link = document.createElement("a");
+      link.href = downloadUrl;
+      link.download = `issues.${format}`;
+      document.body.appendChild(link);
+      link.click();
+      link.remove();
+      window.URL.revokeObjectURL(downloadUrl);
+    } catch (err) {
+      // eslint-disable-next-line no-console
+      console.error(err);
+      alert("Export failed. Please try again.");
+    }
   };
 
   const filtersApplied =
@@ -190,18 +238,18 @@ const IssuesPage = () => {
             ))}
           </div>
           <div className="flex">
-            <a
+            <button
               className="btn btn-ghost"
-              href={buildExportUrl(queryArgs as any, "json")}
+              onClick={() => handleExport("json")}
             >
               Export JSON
-            </a>
-            <a
+            </button>
+            <button
               className="btn btn-ghost"
-              href={buildExportUrl(queryArgs as any, "csv")}
+              onClick={() => handleExport("csv")}
             >
               Export CSV
-            </a>
+            </button>
           </div>
         </div>
 
