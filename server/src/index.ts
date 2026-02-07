@@ -11,13 +11,10 @@ import { errorHandler } from "./middleware/errorHandler";
 const app = express();
 
 app.use(helmet());
+// Allow all origins to keep deployment simple; Railway sits behind HTTPS
 app.use(
   cors({
-    origin: [
-      "https://isstra.netlify.app",
-      "http://localhost:5173",
-      "http://localhost:4173",
-    ],
+    origin: "*",
     methods: ["GET", "POST", "PATCH", "DELETE", "OPTIONS"],
     allowedHeaders: [
       "Content-Type",
@@ -28,7 +25,6 @@ app.use(
     ],
   }),
 );
-// Explicitly handle preflight for all routes
 app.options("*", cors());
 app.use(express.json());
 app.use(morgan("dev"));
