@@ -28,7 +28,9 @@ const IssuesPage = () => {
   const [search, setSearch] = useState("");
   const [status, setStatus] = useState<Issue["status"] | "">("");
   const [priority, setPriority] = useState<Issue["priority"] | "">("");
-  const [severity, setSeverity] = useState<"MINOR" | "MAJOR" | "CRITICAL" | "">("");
+  const [severity, setSeverity] = useState<"MINOR" | "MAJOR" | "CRITICAL" | "">(
+    "",
+  );
   const [assignee, setAssignee] = useState<string>("");
   const [editing, setEditing] = useState<Issue | null>(null);
   const [showCreate, setShowCreate] = useState(false);
