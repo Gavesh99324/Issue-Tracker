@@ -38,7 +38,7 @@ const buildFilters = (query: Record<string, unknown>) => {
     where.severity = severity as Severity;
   }
   if (assignee && typeof assignee === "string") {
-    where.assignee = { contains: assignee, mode: "insensitive" };
+    where.assignee = { contains: assignee };
   }
   if (search && typeof search === "string" && search.trim().length > 0) {
     const labelTerms = search.split(/[, ]+/).filter(Boolean);
