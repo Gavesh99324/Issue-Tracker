@@ -11,7 +11,25 @@ import { errorHandler } from "./middleware/errorHandler";
 const app = express();
 
 app.use(helmet());
-app.use(cors({ origin: "*" }));
+app.use(
+  cors({
+    origin: [
+      "https://isstra.netlify.app",
+      "http://localhost:5173",
+      "http://localhost:4173",
+    ],
+    methods: ["GET", "POST", "PATCH", "DELETE", "OPTIONS"],
+    allowedHeaders: [
+      "Content-Type",
+      "Authorization",
+      "Accept",
+      "Origin",
+      "X-Requested-With",
+    ],
+  }),
+);
+// Explicitly handle preflight for all routes
+app.options("*", cors());
 app.use(express.json());
 app.use(morgan("dev"));
 
