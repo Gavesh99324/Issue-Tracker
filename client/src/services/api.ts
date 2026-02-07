@@ -46,7 +46,7 @@ export type IssueListResponse = {
 export const api = createApi({
   reducerPath: "api",
   baseQuery: fetchBaseQuery({
-    baseUrl: import.meta.env.VITE_API_URL || "http://localhost:4000",
+    baseUrl: import.meta.env.VITE_API_BASE_URL || "http://localhost:4000",
     prepareHeaders: (headers, { getState }) => {
       const token = (getState() as RootState).auth.token;
       if (token) {
@@ -162,5 +162,5 @@ export const buildExportUrl = (
     }
   });
   const search = new URLSearchParams(filtered).toString();
-  return `${import.meta.env.VITE_API_URL || "http://localhost:4000"}/issues/export?${search}`;
+  return `${import.meta.env.VITE_API_BASE_URL || "http://localhost:4000"}/issues/export?${search}`;
 };

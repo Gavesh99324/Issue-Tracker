@@ -171,7 +171,9 @@ const IssuesPage = () => {
             <select
               className="select"
               value={status}
-              onChange={(e) => setStatus(e.target.value)}
+              onChange={(e) =>
+                setStatus(e.target.value as Issue["status"] | "")
+              }
             >
               <option value="">Any</option>
               <option value="OPEN">Open</option>
@@ -185,7 +187,9 @@ const IssuesPage = () => {
             <select
               className="select"
               value={priority}
-              onChange={(e) => setPriority(e.target.value)}
+              onChange={(e) =>
+                setPriority(e.target.value as Issue["priority"] | "")
+              }
             >
               <option value="">Any</option>
               <option value="LOW">Low</option>
@@ -198,8 +202,10 @@ const IssuesPage = () => {
             <label className="label">Severity</label>
             <select
               className="select"
-              value={severity}
-              onChange={(e) => setSeverity(e.target.value)}
+              value={severity ?? ""}
+              onChange={(e) =>
+                setSeverity(e.target.value as Issue["severity"] | "")
+              }
             >
               <option value="">Any</option>
               <option value="MINOR">Minor</option>
