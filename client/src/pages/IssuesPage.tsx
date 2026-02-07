@@ -28,7 +28,7 @@ const IssuesPage = () => {
   const [search, setSearch] = useState("");
   const [status, setStatus] = useState<Issue["status"] | "">("");
   const [priority, setPriority] = useState<Issue["priority"] | "">("");
-  const [severity, setSeverity] = useState<Issue["severity"] | "">("");
+  const [severity, setSeverity] = useState<"MINOR" | "MAJOR" | "CRITICAL" | "">("");
   const [assignee, setAssignee] = useState<string>("");
   const [editing, setEditing] = useState<Issue | null>(null);
   const [showCreate, setShowCreate] = useState(false);
@@ -202,9 +202,11 @@ const IssuesPage = () => {
             <label className="label">Severity</label>
             <select
               className="select"
-              value={severity ?? ""}
+              value={severity}
               onChange={(e) =>
-                setSeverity(e.target.value as Issue["severity"] | "")
+                setSeverity(
+                  e.target.value as "MINOR" | "MAJOR" | "CRITICAL" | "",
+                )
               }
             >
               <option value="">Any</option>

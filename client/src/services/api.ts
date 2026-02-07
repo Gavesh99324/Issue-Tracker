@@ -157,9 +157,10 @@ export const buildExportUrl = (
 ) => {
   const filtered: Record<string, string> = {};
   Object.entries({ ...params, format }).forEach(([key, value]) => {
-    if (value !== undefined && value !== null && value !== "") {
-      filtered[key] = String(value);
-    }
+    if (value === undefined || value === null) return;
+    const stringValue = String(value);
+    if (stringValue === "") return;
+    filtered[key] = stringValue;
   });
   const search = new URLSearchParams(filtered).toString();
   return `${import.meta.env.VITE_API_BASE_URL || "http://localhost:4000"}/issues/export?${search}`;
