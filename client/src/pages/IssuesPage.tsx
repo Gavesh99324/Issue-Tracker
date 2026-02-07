@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useState } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
 import { Link } from "react-router-dom";
 import IssueForm from "../components/IssueForm";
 import PriorityBadge from "../components/PriorityBadge";
@@ -34,6 +34,19 @@ const IssuesPage = () => {
   const [assignee, setAssignee] = useState<string>("");
   const [editing, setEditing] = useState<Issue | null>(null);
   const [showCreate, setShowCreate] = useState(false);
+  const [titleWidth, setTitleWidth] = useState(250);
+  const [columnOrder, setColumnOrder] = useState<string[]>([
+    "status",
+    "priority",
+    "assignee",
+    "owner",
+  ]);
+  const [draggedColumn, setDraggedColumn] = useState<string | null>(null);
+
+  const titleColumnRef = useRef<HTMLTableCellElement>(null);
+  const isResizing = useRef(false);
+  const startX = useRef(0);
+  const startWidth = useRef(0);
 
   const debouncedSearch = useDebounce(search, 350);
 
@@ -83,6 +96,109 @@ const IssuesPage = () => {
   const confirmDelete = async (id: string) => {
     if (!window.confirm("Delete this issue? This cannot be undone.")) return;
     await deleteIssue(id);
+  };
+
+  const handleResizeStart = (e: React.MouseEvent) => {
+    isResizing.current = true;
+    startX.current = e.clientX;
+    startWidth.current = titleWidth;
+    document.body.style.cursor = "col-resize";
+    document.body.style.userSelect = "none";
+  };
+
+  useEffect(() => {
+    const handleMouseMove = (e: MouseEvent) => {
+      if (!isResizing.current) return;
+      const diff = e.clientX - startX.current;
+      const newWidth = Math.max(150, startWidth.current + diff);
+      setTitleWidth(newWidth);
+    };
+
+    const handleMouseUp = () => {
+      if (isResizing.current) {
+        isResizing.current = false;
+        document.body.style.cursor = "";
+        document.body.style.userSelect = "";
+      }
+    };
+
+    document.addEventListener("mousemove", handleMouseMove);
+    document.addEventListener("mouseup", handleMouseUp);
+
+    return () => {
+      document.removeEventListener("mousemove", handleMouseMove);
+      document.removeEventListener("mouseup", handleMouseUp);
+    };
+  }, [titleWidth]);
+
+  const handleDragStart = (column: string) => (e: React.DragEvent) => {
+    setDraggedColumn(column);
+    e.dataTransfer.effectAllowed = "move";
+  };
+
+  const handleDragOver = (e: React.DragEvent) => {
+    e.preventDefault();
+    e.dataTransfer.dropEffect = "move";
+  };
+
+  const handleDrop = (targetColumn: string) => (e: React.DragEvent) => {
+    e.preventDefault();
+    if (!draggedColumn || draggedColumn === targetColumn) return;
+
+    const newOrder = [...columnOrder];
+    const draggedIndex = newOrder.indexOf(draggedColumn);
+    const targetIndex = newOrder.indexOf(targetColumn);
+
+    newOrder.splice(draggedIndex, 1);
+    newOrder.splice(targetIndex, 0, draggedColumn);
+
+    setColumnOrder(newOrder);
+    setDraggedColumn(null);
+  };
+
+  const handleDragEnd = () => {
+    setDraggedColumn(null);
+  };
+
+  const getColumnHeader = (columnKey: string) => {
+    const headers: Record<string, string> = {
+      status: "Status",
+      priority: "Priority",
+      assignee: "Assignee",
+      owner: "Owner",
+    };
+    return headers[columnKey] || columnKey;
+  };
+
+  const renderColumnCell = (columnKey: string, issue: Issue) => {
+    switch (columnKey) {
+      case "status":
+        return (
+          <td key="status" style={{ minWidth: 140 }}>
+            <StatusBadge status={issue.status} />
+          </td>
+        );
+      case "priority":
+        return (
+          <td key="priority" style={{ minWidth: 120 }}>
+            <PriorityBadge priority={issue.priority} />
+          </td>
+        );
+      case "assignee":
+        return (
+          <td key="assignee" style={{ color: "var(--muted)", minWidth: 200 }}>
+            {issue.assignee || "—"}
+          </td>
+        );
+      case "owner":
+        return (
+          <td key="owner" style={{ color: "var(--muted)", minWidth: 150 }}>
+            {issue.createdBy?.name || "—"}
+          </td>
+        );
+      default:
+        return null;
+    }
   };
 
   const handleExport = async (format: "csv" | "json") => {
@@ -137,7 +253,7 @@ const IssuesPage = () => {
 
   return (
     <div className="grid" style={{ gap: 16 }}>
-      <div className="panel card">
+      <div className="panel card table-panel">
         <div className="header">
           <div>
             <div style={{ fontSize: 18, fontWeight: 700 }}>Issues</div>
@@ -267,91 +383,120 @@ const IssuesPage = () => {
           {isLoading ? (
             <div style={{ color: "var(--muted)" }}>Loading issues...</div>
           ) : data && data.items.length > 0 ? (
-            <table className="table">
-              <thead>
-                <tr>
-                  <th>Title</th>
-                  <th>Status</th>
-                  <th>Priority</th>
-                  <th>Assignee</th>
-                  <th>Owner</th>
-                  <th></th>
-                </tr>
-              </thead>
-              <tbody>
-                {data.items.map((issue) => (
-                  <tr key={issue.id}>
-                    <td>
-                      <div style={{ fontWeight: 700 }}>{issue.title}</div>
-                      <div
-                        style={{
-                          color: "var(--muted)",
-                          fontSize: 13,
-                          marginTop: 4,
-                        }}
-                      >
-                        {issue.description.slice(0, 80)}
-                        {issue.description.length > 80 ? "…" : ""}
-                      </div>
-                    </td>
-                    <td>
-                      <StatusBadge status={issue.status} />
-                    </td>
-                    <td>
-                      <PriorityBadge priority={issue.priority} />
-                    </td>
-                    <td style={{ color: "var(--muted)" }}>
-                      {issue.assignee || "—"}
-                    </td>
-                    <td style={{ color: "var(--muted)" }}>
-                      {issue.createdBy?.name || "—"}
-                    </td>
-                    <td
+            <div className="table-wrapper">
+              <table className="table">
+                <thead>
+                  <tr>
+                    <th
+                      ref={titleColumnRef}
+                      className="resizable"
+                      onMouseDown={handleResizeStart}
                       style={{
-                        display: "flex",
-                        gap: 8,
-                        justifyContent: "flex-end",
+                        width: titleWidth,
+                        minWidth: titleWidth,
+                        maxWidth: titleWidth,
                       }}
                     >
-                      <Link
-                        className="btn btn-ghost"
-                        to={`/issues/${issue.id}`}
+                      Title
+                    </th>
+                    <th>Description</th>
+                    {columnOrder.map((columnKey) => (
+                      <th
+                        key={columnKey}
+                        className="draggable"
+                        draggable
+                        onDragStart={handleDragStart(columnKey)}
+                        onDragOver={handleDragOver}
+                        onDrop={handleDrop(columnKey)}
+                        onDragEnd={handleDragEnd}
+                        style={{
+                          cursor: "move",
+                          opacity: draggedColumn === columnKey ? 0.5 : 1,
+                        }}
                       >
-                        View
-                      </Link>
-                      <button
-                        className="btn btn-ghost"
-                        onClick={() => setEditing(issue)}
+                        {getColumnHeader(columnKey)}
+                      </th>
+                    ))}
+                    <th></th>
+                  </tr>
+                </thead>
+                <tbody>
+                  {data.items.map((issue) => (
+                    <tr key={issue.id}>
+                      <td
+                        style={{
+                          width: titleWidth,
+                          minWidth: titleWidth,
+                          maxWidth: titleWidth,
+                        }}
                       >
-                        Edit
-                      </button>
-                      {issue.status !== "RESOLVED" && (
-                        <button
-                          className="btn btn-primary"
-                          onClick={() => confirmStatus(issue, "RESOLVED")}
+                        <div
+                          style={{
+                            fontWeight: 700,
+                            overflow: "hidden",
+                            textOverflow: "ellipsis",
+                            whiteSpace: "nowrap",
+                          }}
                         >
-                          Resolve
-                        </button>
+                          {issue.title}
+                        </div>
+                      </td>
+                      <td>
+                        <div className="description-cell">
+                          {issue.description}
+                        </div>
+                      </td>
+                      {columnOrder.map((columnKey) =>
+                        renderColumnCell(columnKey, issue),
                       )}
-                      {issue.status !== "CLOSED" && (
+                      <td
+                        style={{
+                          display: "flex",
+                          gap: 8,
+                          justifyContent: "flex-end",
+                          whiteSpace: "nowrap",
+                        }}
+                      >
+                        <Link
+                          className="btn btn-ghost"
+                          to={`/issues/${issue.id}`}
+                        >
+                          View
+                        </Link>
                         <button
                           className="btn btn-ghost"
-                          onClick={() => confirmStatus(issue, "CLOSED")}
+                          onClick={() => setEditing(issue)}
                         >
-                          Close
+                          Edit
                         </button>
-                      )}
-                      <button
-                        className="btn btn-danger"
-                        onClick={() => confirmDelete(issue.id)}
-                      >
-                        Delete
-                      </button>
-                    </td>
-                  </tr>
-                ))}
-              </tbody>
-            </table>
+                        {issue.status !== "RESOLVED" && (
+                          <button
+                            className="btn btn-primary"
+                            onClick={() => confirmStatus(issue, "RESOLVED")}
+                          >
+                            Resolve
+                          </button>
+                        )}
+                        {issue.status !== "CLOSED" && (
+                          <button
+                            className="btn btn-ghost"
+                            onClick={() => confirmStatus(issue, "CLOSED")}
+                          >
+                            Close
+                          </button>
+                        )}
+                        <button
+                          className="btn btn-danger"
+                          onClick={() => confirmDelete(issue.id)}
+                        >
+                          Delete
+                        </button>
+                      </td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            </div>
           ) : (
             <div style={{ color: "var(--muted)", padding: 16 }}>
               No issues yet.

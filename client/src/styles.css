@@ -37,9 +37,14 @@
   box-sizing: border-box;
 }
 
+html {
+  overflow-x: hidden;
+}
+
 body {
   margin: 0;
   background: transparent;
+  overflow-x: hidden;
 }
 
 a {
@@ -67,6 +72,7 @@ button {
   max-width: 1200px;
   margin: 0 auto;
   padding: 24px;
+  overflow-x: hidden;
 }
 
 .panel {
@@ -74,15 +80,25 @@ button {
   border: 1px solid var(--border);
   border-radius: var(--radius);
   box-shadow: 0 20px 60px rgba(0, 0, 0, 0.35);
+  width: 100%;
+  max-width: 100%;
+  overflow: hidden;
+}
+
+.panel.table-panel {
+  border: 2px solid var(--border);
 }
 
 .flex {
   display: flex;
   gap: 12px;
+  flex-wrap: wrap;
 }
 
 .grid {
   display: grid;
+  width: 100%;
+  max-width: 100%;
 }
 
 .btn {
@@ -169,26 +185,153 @@ select option {
 .table {
   width: 100%;
   border-collapse: collapse;
+  table-layout: auto;
+  border-left: 1px solid var(--border);
 }
 
 .table th,
 .table td {
-  padding: 12px;
+  padding: 14px 12px;
   text-align: left;
+  vertical-align: top;
+  border-right: 1px solid var(--border);
+  border-bottom: 1px solid var(--border);
 }
 
 .table thead {
   color: var(--muted);
   font-size: 13px;
   letter-spacing: 0.5px;
+  font-weight: 700;
+  text-transform: uppercase;
+  background: rgba(255, 255, 255, 0.02);
+}
+
+.table thead th {
+  position: relative;
+  border-bottom: 2px solid var(--border);
+}
+
+.table thead th.resizable {
+  cursor: col-resize;
+  user-select: none;
+  padding-right: 32px;
+}
+
+.table thead th.resizable::after {
+  content: "⇔";
+  position: absolute;
+  right: 4px;
+  top: 50%;
+  transform: translateY(-50%);
+  color: var(--muted);
+  font-size: 14px;
+  opacity: 0.6;
+  transition: all 0.2s ease;
+}
+
+.table thead th.resizable:hover::after {
+  color: var(--primary);
+  opacity: 1;
+}
+
+.table thead th.draggable {
+  position: relative;
+  cursor: move;
+  user-select: none;
+  padding-right: 32px;
+}
+
+.table thead th.draggable::after {
+  content: "⋮⋮";
+  position: absolute;
+  right: 8px;
+  top: 50%;
+  transform: translateY(-50%);
+  color: var(--muted);
+  font-size: 16px;
+  font-weight: 900;
+  opacity: 0.6;
+  letter-spacing: -2px;
+  transition: all 0.2s ease;
+}
+
+.table thead th.draggable:hover::after {
+  color: var(--primary);
+  opacity: 1;
+}
+
+.table thead th.draggable:active {
+  opacity: 0.5;
 }
 
 .table tbody tr {
   border-top: 1px solid var(--border);
+  transition: background 0.15s ease;
+}
+
+.table tbody tr:hover {
+  background: rgba(255, 255, 255, 0.02);
+}
+
+.table-wrapper {
+  width: 100%;
+  max-width: 100%;
+  overflow-x: auto;
+  scrollbar-width: thin;
+  scrollbar-color: var(--border) transparent;
+}
+
+.table-wrapper::-webkit-scrollbar {
+  height: 6px;
+}
+
+.table-wrapper::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+.table-wrapper::-webkit-scrollbar-thumb {
+  background: var(--border);
+  border-radius: 3px;
+}
+
+.table-wrapper::-webkit-scrollbar-thumb:hover {
+  background: rgba(255, 255, 255, 0.15);
+}
+
+.description-cell {
+  color: var(--muted);
+  font-size: 13px;
+  max-width: 500px;
+  min-width: 300px;
+  overflow-x: auto;
+  white-space: nowrap;
+  scrollbar-width: thin;
+  scrollbar-color: var(--border) transparent;
+}
+
+.description-cell::-webkit-scrollbar {
+  height: 6px;
+}
+
+.description-cell::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+.description-cell::-webkit-scrollbar-thumb {
+  background: var(--border);
+  border-radius: 3px;
+}
+
+.description-cell::-webkit-scrollbar-thumb:hover {
+  background: rgba(255, 255, 255, 0.15);
 }
 
 .card {
   padding: 18px;
+  width: 100%;
+  max-width: 100%;
+  overflow: hidden;
 }
 
 .header {
@@ -197,12 +340,16 @@ select option {
   justify-content: space-between;
   gap: 16px;
   margin-bottom: 16px;
+  width: 100%;
+  max-width: 100%;
+  flex-wrap: wrap;
 }
 
 .chip-list {
   display: flex;
   flex-wrap: wrap;
   gap: 6px;
+  max-width: 100%;
 }
 
 .chip {
@@ -217,6 +364,8 @@ select option {
   display: grid;
   gap: 12px;
   grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+  width: 100%;
+  max-width: 100%;
 }
 
 @media (max-width: 768px) {
