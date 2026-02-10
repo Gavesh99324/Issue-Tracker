@@ -35,6 +35,7 @@ const IssuesPage = () => {
   const [editing, setEditing] = useState<Issue | null>(null);
   const [showCreate, setShowCreate] = useState(false);
   const [titleWidth, setTitleWidth] = useState(250);
+  const [descriptionWidth, setDescriptionWidth] = useState(320);
   const [columnOrder, setColumnOrder] = useState<string[]>([
     "status",
     "priority",
@@ -45,6 +46,7 @@ const IssuesPage = () => {
 
   const titleColumnRef = useRef<HTMLTableCellElement>(null);
   const isResizing = useRef(false);
+  const resizingColumn = useRef<"title" | "description" | null>(null);
   const startX = useRef(0);
   const startWidth = useRef(0);
 
@@ -98,20 +100,32 @@ const IssuesPage = () => {
     await deleteIssue(id);
   };
 
-  const handleResizeStart = (e: React.MouseEvent) => {
-    isResizing.current = true;
-    startX.current = e.clientX;
-    startWidth.current = titleWidth;
-    document.body.style.cursor = "col-resize";
-    document.body.style.userSelect = "none";
-  };
+  const handleResizeStart =
+    (column: "title" | "description") => (e: React.MouseEvent) => {
+      isResizing.current = true;
+      resizingColumn.current = column;
+      startX.current = e.clientX;
+      startWidth.current = column === "title" ? titleWidth : descriptionWidth;
+      document.body.style.cursor = "col-resize";
+      document.body.style.userSelect = "none";
+    };
 
   useEffect(() => {
     const handleMouseMove = (e: MouseEvent) => {
       if (!isResizing.current) return;
       const diff = e.clientX - startX.current;
-      const newWidth = Math.max(150, startWidth.current + diff);
-      setTitleWidth(newWidth);
+      const column = resizingColumn.current;
+
+      if (column === "title") {
+        const newWidth = Math.max(150, startWidth.current + diff);
+        setTitleWidth(newWidth);
+      }
+
+      if (column === "description") {
+        const newWidth = Math.max(280, startWidth.current + diff);
+        const clamped = Math.min(520, newWidth);
+        setDescriptionWidth(clamped);
+      }
     };
 
     const handleMouseUp = () => {
@@ -119,6 +133,7 @@ const IssuesPage = () => {
         isResizing.current = false;
         document.body.style.cursor = "";
         document.body.style.userSelect = "";
+        resizingColumn.current = null;
       }
     };
 
@@ -389,17 +404,29 @@ const IssuesPage = () => {
                   <tr>
                     <th
                       ref={titleColumnRef}
-                      className="resizable"
-                      onMouseDown={handleResizeStart}
+                      className="resizable sticky-col sticky-title"
+                      onMouseDown={handleResizeStart("title")}
                       style={{
                         width: titleWidth,
                         minWidth: titleWidth,
                         maxWidth: titleWidth,
+                        left: 0,
                       }}
                     >
                       Title
                     </th>
-                    <th>Description</th>
+                    <th
+                      className="sticky-col sticky-description resizable"
+                      onMouseDown={handleResizeStart("description")}
+                      style={{
+                        left: titleWidth,
+                        width: descriptionWidth,
+                        minWidth: descriptionWidth,
+                        maxWidth: descriptionWidth,
+                      }}
+                    >
+                      Description
+                    </th>
                     {columnOrder.map((columnKey) => (
                       <th
                         key={columnKey}
@@ -424,10 +451,12 @@ const IssuesPage = () => {
                   {data.items.map((issue) => (
                     <tr key={issue.id}>
                       <td
+                        className="sticky-col sticky-title"
                         style={{
                           width: titleWidth,
                           minWidth: titleWidth,
                           maxWidth: titleWidth,
+                          left: 0,
                         }}
                       >
                         <div
@@ -441,7 +470,15 @@ const IssuesPage = () => {
                           {issue.title}
                         </div>
                       </td>
-                      <td>
+                      <td
+                        className="sticky-col sticky-description"
+                        style={{
+                          left: titleWidth,
+                          width: descriptionWidth,
+                          minWidth: descriptionWidth,
+                          maxWidth: descriptionWidth,
+                        }}
+                      >
                         <div className="description-cell">
                           {issue.description}
                         </div>

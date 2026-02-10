@@ -218,6 +218,28 @@ select option {
   padding-right: 32px;
 }
 
+.table .sticky-col {
+  position: sticky;
+  background: linear-gradient(145deg, var(--panel), var(--panel-strong));
+  overflow: hidden;
+}
+
+.table thead .sticky-col {
+  top: 0;
+  z-index: 5;
+}
+
+.table .sticky-title {
+  left: 0;
+  z-index: 6;
+  box-shadow: 4px 0 0 var(--border);
+}
+
+.table .sticky-description {
+  z-index: 5;
+  box-shadow: 4px 0 0 var(--border);
+}
+
 .table thead th.resizable::after {
   content: "⇔";
   position: absolute;
@@ -302,8 +324,8 @@ select option {
 .description-cell {
   color: var(--muted);
   font-size: 13px;
-  max-width: 500px;
-  min-width: 300px;
+  max-width: 480px;
+  min-width: 280px;
   overflow-x: auto;
   white-space: nowrap;
   scrollbar-width: thin;
